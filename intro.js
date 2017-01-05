@@ -386,6 +386,9 @@
    * @param {Object} targetElement
    */
   function _exitIntro(targetElement) {
+    //Undo the "fake scrolling".
+    document.querySelector("ion-content").style.top = null;
+
     //remove overlay layers from the page
     var overlayLayers = targetElement.querySelectorAll('.introjs-overlay');
 
@@ -723,8 +726,22 @@
       if (!this._introItems[this._currentStep]) return;
 
       var currentElement  = this._introItems[this._currentStep],
-          elementPosition = _getOffset(currentElement.element),
+          // elementPosition = _getOffset(currentElement.element),
           widthHeightPadding = 10;
+
+      var elementPosition;
+      // var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
+      // var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+      // var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
+      // var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
+
+      if(document.querySelector("ion-content.overflow-scroll") === null) {
+        elementPosition = _getOffset(currentElement.element);
+      } else {
+        elementPosition = currentElement.element.getBoundingClientRect();
+      }
+      
+      // console.log(elementPosition);
 
       // If the target element is fixed, the tooltip should be fixed as well.
       // Otherwise, remove a fixed class that may be left over from the previous
@@ -801,6 +818,64 @@
     //check for options highlight class
     if (typeof (this._options.highlightClass) === 'string') {
       highlightClass += (' ' + this._options.highlightClass);
+    }
+
+
+    var jsScrolling = document.querySelector("ion-content.overflow-scroll") === null;
+    var rect = targetElement.element.getBoundingClientRect();
+    var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
+    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
+    var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
+    //ANDROID PUTS THE NAV ON TOP!  TEST! ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    var ionContent = document.querySelector("ion-content");
+
+    //Element already fully visible
+    if (_elementInViewport(targetElement.element)) {
+      //If we're using Ionic JS scrolling instead of native (overflow) scrolling, we need to convert from Ionic JS scrolling (Fancy CSS translation) to fake scrolling (Basic CSS offset).  Otherwise, the application of the introjs-fixParent class disables our Ionic scrolling, erroneously scrolling us back to the top.
+      //Alternate approach: I wonder if I could use the vanilla version of Intro.js if I simply turn off JS scrolling on this view in Ionic... But does that have other unintended consequences?
+      // console.log("Element already fully visible");
+      if(jsScrolling) {
+        // console.log("Using JS scrolling; convert to basic CSS fake scrolling");
+        ionContent.style.top = (-1 * (fakeScrollTop + containerRect.top + 9)) + "px"; //Not sure why we need the 9...  Maybe it's some padding not accounted for somewhere?
+      }
+      //NOTE: For native scrolling, no action is necessary.
+    } else if (this._options.scrollToElement === true) {
+      var rect = targetElement.element.getBoundingClientRect(),
+        winHeight = _getWinSize().height,
+        top = rect.top,
+        bottom = rect.bottom - winHeight;
+
+      //Scroll up
+      if (rect.bottom <= containerBottom) {
+        // console.log("Scroll up");
+        if(jsScrolling) {
+          // console.log("JS scrolling");
+          ionContent.style.top = (-1 * (fakeScrollTop + top - this._options.scrollPadding)) + "px"; // 30px padding from edge to look nice
+        } else {
+          // console.log("Native scrolling");
+          //Couldn't get this approach to work for scrolling up (scrolling down worked...).  There were some weird overflow issues.  Retaining it in case our alternative doesn't work.
+          // ionContent.style.top = (-1 * (top - this._options.scrollPadding)) + "px"; // 30px padding from edge to look nice
+
+          //Alternative native scrolling approach, takes advantage directly of native scrolling support.  Consequence: when the tour exits, it doesn't return you to where you started.  Could always write extra code to perform this functionality if desired.
+          ionContent.scrollTop = ionContent.scrollTop + top - this._options.scrollPadding - 150;
+        }
+
+      //Scroll down
+      } else if(rect.top >= containerRect.top) {
+        // console.log("Scroll down");
+        if(jsScrolling) {
+          // console.log("JS scrolling");
+          ionContent.style.top = (-1 * (fakeScrollTop + bottom + 70 + this._options.scrollPadding + tabNavHeight)) + "px"; // 70px + 30px padding from edge to look nice
+        } else {
+          // console.log("Native scrolling");
+          //Works, but couldn't get the "scroll up" equivalent to work, so using the alternative below.
+          // ionContent.style.top = (-1 * (bottom + 70 + this._options.scrollPadding + tabNavHeight)) + "px"; // 70px + 30px padding from edge to look nice
+
+          //For consistency, using an approach that mirrors the one that works in the native, scroll up scenario above.
+          ionContent.scrollTop = ionContent.scrollTop + top - this._options.scrollPadding - winHeight + 150 ;
+        }
+      }
     }
 
     if (oldHelperLayer != null) {
@@ -1062,22 +1137,6 @@
 
     _setShowElement(targetElement);
 
-    if (!_elementInViewport(targetElement.element) && this._options.scrollToElement === true) {
-      var rect = targetElement.element.getBoundingClientRect(),
-        winHeight = _getWinSize().height,
-        top = rect.bottom - (rect.bottom - rect.top),
-        bottom = rect.bottom - winHeight;
-
-      //Scroll up
-      if (top < 0 || targetElement.element.clientHeight > winHeight) {
-        window.scrollBy(0, top - this._options.scrollPadding); // 30px padding from edge to look nice
-
-      //Scroll down
-      } else {
-        window.scrollBy(0, bottom + 70 + this._options.scrollPadding); // 70px + 30px padding from edge to look nice
-      }
-    }
-
     if (typeof (this._introAfterChangeCallback) !== 'undefined') {
       this._introAfterChangeCallback.call(this, targetElement.element);
     }
@@ -1228,16 +1287,21 @@
    * @returns {Object} width and height attributes
    */
   function _getWinSize() {
+    //These changes have admittedly not been tested much
+    var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
+    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerHeight = containerRect.bottom - containerRect.top - tabNavHeight;
+
     if (window.innerWidth != undefined) {
-      return { width: window.innerWidth, height: window.innerHeight };
+      return { width: window.innerWidth, height: containerHeight };
     } else {
       var D = document.documentElement;
-      return { width: D.clientWidth, height: D.clientHeight };
+      return { width: D.clientWidth, height: containerHeight };
     }
   }
 
   /**
-   * Check to see if the element is in the viewport or not
+   * Check to see if the element is fully visible in the viewport or not
    * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
    *
    * @api private
@@ -1246,11 +1310,16 @@
    */
   function _elementInViewport(el) {
     var rect = el.getBoundingClientRect();
+    var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
+    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
 
     return (
-      rect.top >= 0 &&
+      rect.top >= containerRect.top &&
       rect.left >= 0 &&
-      (rect.bottom+80) <= window.innerHeight && // add 80 to get the text right
+      // (rect.bottom+80) <= containerRect.bottom && // add 80 to get the text right
+      rect.bottom <= containerBottom && // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
+      //ANDROID PUTS THE NAV ON TOP!  TEST! ^^^^^^^^^^^^^^^^^^^^^^^^^^^
       rect.right <= window.innerWidth
     );
   }
@@ -1467,39 +1536,6 @@
 
     if (hint) {
       hint.className = hint.className.replace(/introjs\-hidehint/g, '');
-    }
-  };
-
-  /**
-   * Removes all hint elements on the page
-   * Useful when you want to destroy the elements and add them again (e.g. a modal or popup)
-   *
-   * @api private
-   * @method _removeHints
-   */
-  function _removeHints() {
-    var hints = this._targetElement.querySelectorAll('.introjs-hint');
-
-    if (hints && hints.length > 0) {
-      for (var i = 0; i < hints.length; i++) {
-        _removeHint.call(this, hints[i].getAttribute('data-step'));
-      }
-    }
-  };
-
-  /**
-   * Remove one single hint element from the page
-   * Useful when you want to destroy the element and add them again (e.g. a modal or popup)
-   * Use removeHints if you want to remove all elements.
-   *
-   * @api private
-   * @method _removeHint
-   */
-  function _removeHint(stepId) {
-    var hint = this._targetElement.querySelector('.introjs-hint[data-step="' + stepId + '"]');
-
-    if (hint) {
-      hint.parentNode.removeChild(hint);
     }
   };
 
@@ -1949,14 +1985,6 @@
     },
     showHints: function () {
       _showHints.call(this);
-      return this;
-    },
-    removeHints: function () {
-      _removeHints.call(this);
-      return this;
-    },
-    removeHint: function (stepId) {
-      _removeHint.call(this, stepId);
       return this;
     }
   };
