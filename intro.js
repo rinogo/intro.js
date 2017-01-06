@@ -957,6 +957,7 @@
       var helperLayer       = document.createElement('div'),
           referenceLayer    = document.createElement('div'),
           arrowLayer        = document.createElement('div'),
+          contactLayer      = document.createElement('div'),
           tooltipLayer      = document.createElement('div'),
           tooltipTextLayer  = document.createElement('div'),
           bulletsLayer      = document.createElement('div'),
@@ -975,6 +976,14 @@
       this._targetElement.appendChild(referenceLayer);
 
       arrowLayer.className = 'introjs-arrow';
+
+      contactLayer.className = 'introjs-contact';
+      contactLayer.innerHTML = '<button class="contact-support button button-calm">Contact Support</button>';
+      contactLayer.querySelector("button").onclick = function() {
+        if (typeof (self._introContactCallback) !== 'undefined') {
+          self._introContactCallback.call(self);
+        }
+      };
 
       tooltipTextLayer.className = 'introjs-tooltiptext';
       tooltipTextLayer.innerHTML = targetElement.intro;
@@ -1037,6 +1046,7 @@
       }
 
       tooltipLayer.appendChild(arrowLayer);
+      referenceLayer.appendChild(contactLayer);
       referenceLayer.appendChild(tooltipLayer);
 
       //next button
@@ -1924,6 +1934,14 @@
         this._introAfterChangeCallback = providedCallback;
       } else {
         throw new Error('Provided callback for onafterchange was not a function');
+      }
+      return this;
+    },
+    oncontact: function(providedCallback) {
+      if (typeof (providedCallback) === 'function') {
+        this._introContactCallback = providedCallback;
+      } else {
+        throw new Error('Provided callback for oncontact was not a function');
       }
       return this;
     },
