@@ -731,7 +731,7 @@
 
       var elementPosition;
       // var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-      // var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+      // var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
       // var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
       // var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
 
@@ -824,7 +824,7 @@
     var jsScrolling = document.querySelector("ion-content.overflow-scroll") === null;
     var rect = targetElement.element.getBoundingClientRect();
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
     var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
     var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
     //ANDROID PUTS THE NAV ON TOP!  TEST! ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1299,7 +1299,7 @@
   function _getWinSize() {
     //These changes have admittedly not been tested much
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
     var containerHeight = containerRect.bottom - containerRect.top - tabNavHeight;
 
     if (window.innerWidth != undefined) {
@@ -1321,7 +1321,7 @@
   function _elementInViewport(el) {
     var rect = el.getBoundingClientRect();
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view[state='tab.posts']").getBoundingClientRect();
+    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
     var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
 
     return (
