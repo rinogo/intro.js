@@ -19,6 +19,7 @@
 } (this, function (exports) {
   //Default config/variables
   var VERSION = '2.5.0';
+  var ionViewSelector = "ion-view[nav-view=active]:not([tabs]) ";
 
   /**
    * IntroJs main class
@@ -387,7 +388,7 @@
    */
   function _exitIntro(targetElement) {
     //Undo the "fake scrolling".
-    document.querySelector("ion-content").style.top = null;
+    document.querySelector(ionViewSelector + "ion-content").style.top = null;
 
     //remove overlay layers from the page
     var overlayLayers = targetElement.querySelectorAll('.introjs-overlay');
@@ -731,11 +732,11 @@
 
       var elementPosition;
       // var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-      // var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
+      // var containerRect = document.querySelector("ion-nav-view").getBoundingClientRect(); //NOTE: If the app has many ion-nav-view elements, we might need to pass in a selector (or the actual ion-nav-view element) to know which one to use here.
       // var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
-      // var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
+      // var fakeScrollTop = document.querySelector(ionViewSelector + "ion-content > .scroll").getBoundingClientRect().top * -1;
 
-      if(document.querySelector("ion-content.overflow-scroll") === null) {
+      if(document.querySelector(ionViewSelector + "ion-content.overflow-scroll") === null) {
         elementPosition = _getOffset(currentElement.element);
       } else {
         elementPosition = currentElement.element.getBoundingClientRect();
@@ -821,14 +822,14 @@
     }
 
 
-    var jsScrolling = document.querySelector("ion-content.overflow-scroll") === null;
+    var jsScrolling = document.querySelector(ionViewSelector + "ion-content.overflow-scroll") === null;
     var rect = targetElement.element.getBoundingClientRect();
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
+    var containerRect = document.querySelector("ion-nav-view").getBoundingClientRect(); //NOTE: If the app has many ion-nav-view elements, we might need to pass in a selector (or the actual ion-nav-view element) to know which one to use here.
     var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight; // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
-    var fakeScrollTop = document.querySelector("ion-content > .scroll").getBoundingClientRect().top * -1;
+    var fakeScrollTop = document.querySelector(ionViewSelector + "ion-content > .scroll").getBoundingClientRect().top * -1;
     //ANDROID PUTS THE NAV ON TOP!  TEST! ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    var ionContent = document.querySelector("ion-content");
+    var ionContent = document.querySelector(ionViewSelector + "ion-content");
 
     //Element already fully visible
     if (_elementInViewport(targetElement.element)) {
@@ -852,6 +853,7 @@
         if(jsScrolling) {
           // console.log("JS scrolling");
           ionContent.style.top = (-1 * (fakeScrollTop + top - this._options.scrollPadding)) + "px"; // 30px padding from edge to look nice
+          // console.log(ionContent.style.top);
         } else {
           // console.log("Native scrolling");
           //Couldn't get this approach to work for scrolling up (scrolling down worked...).  There were some weird overflow issues.  Retaining it in case our alternative doesn't work.
@@ -859,6 +861,7 @@
 
           //Alternative native scrolling approach, takes advantage directly of native scrolling support.  Consequence: when the tour exits, it doesn't return you to where you started.  Could always write extra code to perform this functionality if desired.
           ionContent.scrollTop = ionContent.scrollTop + top - this._options.scrollPadding - 150;
+          // console.log(ionContent.scrollTop);
         }
 
       //Scroll down
@@ -867,6 +870,7 @@
         if(jsScrolling) {
           // console.log("JS scrolling");
           ionContent.style.top = (-1 * (fakeScrollTop + bottom + 70 + this._options.scrollPadding + tabNavHeight)) + "px"; // 70px + 30px padding from edge to look nice
+          // console.log(ionContent.style.top);
         } else {
           // console.log("Native scrolling");
           //Works, but couldn't get the "scroll up" equivalent to work, so using the alternative below.
@@ -874,6 +878,7 @@
 
           //For consistency, using an approach that mirrors the one that works in the native, scroll up scenario above.
           ionContent.scrollTop = ionContent.scrollTop + top - this._options.scrollPadding - winHeight + 150 ;
+          // console.log(ionContent.scrollTop);
         }
       }
     }
@@ -1299,7 +1304,7 @@
   function _getWinSize() {
     //These changes have admittedly not been tested much
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
+    var containerRect = document.querySelector("ion-nav-view").getBoundingClientRect(); //NOTE: If the app has many ion-nav-view elements, we might need to pass in a selector (or the actual ion-nav-view element) to know which one to use here.
     var containerHeight = containerRect.bottom - containerRect.top - tabNavHeight;
 
     if (window.innerWidth != undefined) {
@@ -1321,7 +1326,7 @@
   function _elementInViewport(el) {
     var rect = el.getBoundingClientRect();
     var tabNavHeight = document.querySelector(".tab-nav").offsetHeight;
-    var containerRect = document.querySelector("ion-view:not([abstract='true'])").getBoundingClientRect(); //NOTE: If the app has many ion-view elements, we might need to pass in a selector (or the actual ion-view element) to know which one to use here.
+    var containerRect = document.querySelector("ion-nav-view").getBoundingClientRect(); //NOTE: If the app has many ion-nav-view elements, we might need to pass in a selector (or the actual ion-nav-view element) to know which one to use here.
     var containerBottom = containerRect.bottom - containerRect.top - tabNavHeight // Height of the container (could alternatively use window.innerHeight) less the container's offset from the top less the height of the tab nav
 
     return (
