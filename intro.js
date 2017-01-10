@@ -982,13 +982,15 @@
 
       arrowLayer.className = 'introjs-arrow';
 
-      contactLayer.className = 'introjs-contact';
-      contactLayer.innerHTML = '<button class="contact-support button button-calm">Contact Support</button>';
-      contactLayer.querySelector("button").onclick = function() {
-        if (typeof (self._introContactCallback) !== 'undefined') {
+      if (typeof (self._introContactCallback) !== "undefined") {
+        contactLayer.className = 'introjs-contact';
+        contactLayer.innerHTML = '<button class="contact-support button button-calm">Contact Support</button>';
+        contactLayer.querySelector("button").onclick = function() {
           self._introContactCallback.call(self);
-        }
-      };
+        };
+        
+        referenceLayer.appendChild(contactLayer);
+      }
 
       tooltipTextLayer.className = 'introjs-tooltiptext';
       tooltipTextLayer.innerHTML = targetElement.intro;
@@ -1051,7 +1053,6 @@
       }
 
       tooltipLayer.appendChild(arrowLayer);
-      referenceLayer.appendChild(contactLayer);
       referenceLayer.appendChild(tooltipLayer);
 
       //next button
