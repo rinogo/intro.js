@@ -1169,6 +1169,7 @@
     for (var i = 0, l = elms.length; i < l; i++) {
       var elm = elms[i];
       _removeClass(elm, /introjs-[a-zA-Z]+/g);
+      elm.style["pointer-events"] = null; //Restore ability to use mouse to interact with highlighted elements.  Note that this implementation will overwrite the original value of `pointer-events` if one was set.
     }
   }
 
@@ -1198,6 +1199,7 @@
     }
 
     _setClass(targetElement.element, 'introjs-showElement');
+    targetElement.element.style["pointer-events"] = "none"; //Don't allow highlighted elements to be interacted with (at least via the mouse; I suppose you could still "tab" your way into them...)
 
     var currentElementPosition = _getPropValue(targetElement.element, 'position');
     if (currentElementPosition !== 'absolute' &&
